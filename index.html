@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samsung Mobile Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
+:root{
+  --blue:#1428A0;--blue-dark:#0e1d78;--blue-light:#eaf0ff;--bg:#f0f2f8;
+  --shadow:0 6px 24px rgba(20,40,160,.12);--hover-shadow:0 14px 40px rgba(20,40,160,.22);
+  --r:16px;--t:.3s
+}
+body{background:var(--bg);color:#222}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#1428A0,#2a45d4);color:#fff;padding:24px 20px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(20,40,160,.3)}
+header h1{font-size:clamp(20px,5vw,32px);font-weight:700}
+header p{font-size:12px;opacity:.8;margin-top:3px;letter-spacing:2px;text-transform:uppercase}
+
+/* NAV */
+nav{background:#fff;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07);position:sticky;top:76px;z-index:99}
+nav a{display:inline-block;text-decoration:none;color:var(--blue);padding:14px 20px;font-weight:600;font-size:14px;border-bottom:3px solid transparent;transition:all var(--t)}
+nav a:hover{background:var(--blue-light);border-bottom-color:var(--blue)}
+
+/* HERO */
+.hero{text-align:center;padding:64px 20px 44px;background:linear-gradient(160deg,#dce6ff,#eef3ff 60%,var(--bg))}
+.hero h1{font-size:clamp(24px,5vw,42px);color:var(--blue);font-weight:700;margin-bottom:12px}
+.hero p{font-size:16px;color:#555;max-width:560px;margin:0 auto 30px;line-height:1.6}
+
+/* SEARCH */
+.search-wrap{max-width:520px;margin:0 auto;position:relative}
+.search-wrap svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);stroke:#aaa;pointer-events:none}
+#search{width:100%;padding:14px 18px 14px 48px;border:2px solid #c5d3f8;border-radius:50px;font-size:15px;outline:none;background:#fff;transition:border-color var(--t),box-shadow var(--t);box-shadow:0 4px 14px rgba(20,40,160,.08)}
+#search:focus{border-color:var(--blue);box-shadow:0 4px 20px rgba(20,40,160,.18)}
+#search::placeholder{color:#bbb}
+
+/* PHONES SECTION */
+.phones{padding:48px 20px 60px;max-width:1360px;margin:0 auto;text-align:center}
+.phones>h2{font-size:clamp(18px,3vw,26px);color:var(--blue);font-weight:700;margin-bottom:6px}
+.phones>.sub{color:#666;font-size:14px;margin-bottom:28px}
+
+/* COUNT BADGE */
+#count-badge{display:inline-block;background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:50px;margin-bottom:28px}
+
+/* FILTER TABS */
+.tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+.tab{padding:8px 20px;border:2px solid var(--blue);border-radius:50px;background:transparent;color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.tab.active,.tab:hover{background:var(--blue);color:#fff}
+/* Series colour accents on tabs */
+.tab[data-f="z"]{border-color:#7b2ff7;color:#7b2ff7}
+.tab[data-f="z"].active,.tab[data-f="z"]:hover{background:#7b2ff7;color:#fff;border-color:#7b2ff7}
+.tab[data-f="a"]{border-color:#0e7c5e;color:#0e7c5e}
+.tab[data-f="a"].active,.tab[data-f="a"]:hover{background:#0e7c5e;color:#fff;border-color:#0e7c5e}
+.tab[data-f="m"]{border-color:#c45000;color:#c45000}
+.tab[data-f="m"].active,.tab[data-f="m"]:hover{background:#c45000;color:#fff;border-color:#c45000}
+.tab[data-f="f"]{border-color:#b8000e;color:#b8000e}
+.tab[data-f="f"].active,.tab[data-f="f"]:hover{background:#b8000e;color:#fff;border-color:#b8000e}
+
+/* NO RESULTS */
+#no-results{display:none;color:#888;font-size:16px;margin:40px 0}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px}
+
+/* CARD */
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;transition:transform var(--t),box-shadow var(--t);animation:fadeUp .45s ease both}
+.card:hover{transform:translateY(-7px) scale(1.015);box-shadow:var(--hover-shadow)}
+.card.hidden{display:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARD IMAGE */
+.card-img{background:linear-gradient(160deg,#e8eeff,#f5f8ff);padding:22px 14px 12px;text-align:center;position:relative;min-height:190px;display:flex;align-items:center;justify-content:center}
+.badge{position:absolute;top:10px;left:10px;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:50px;text-transform:uppercase}
+.bs{background:linear-gradient(135deg,#1428A0,#2a45d4)}
+.bz{background:linear-gradient(135deg,#7b2ff7,#b066ff)}
+.ba{background:linear-gradient(135deg,#0e7c5e,#17a779)}
+.bm{background:linear-gradient(135deg,#c45000,#f07020)}
+.bf{background:linear-gradient(135deg,#b8000e,#e8243a)}
+.card-img img{width:95px;height:145px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.14));transition:transform var(--t);display:block}
+.card:hover .card-img img{transform:scale(1.09) translateY(-5px)}
+
+/* CARD BODY */
+.card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
+.card-body h3{font-size:14.5px;font-weight:700;margin-bottom:4px;line-height:1.3}
+.card-body .tl{font-size:12px;color:#666;margin-bottom:11px;line-height:1.5}
+.qs{list-style:none;font-size:11.5px;color:#444;flex:1;margin-bottom:13px}
+.qs li{padding:3px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:5px}
+.qs li:last-child{border-bottom:none}
+.ql{font-weight:600;color:var(--blue);min-width:60px;flex-shrink:0}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.price{font-size:14.5px;font-weight:700;color:var(--blue)}
+.btn{padding:8px 16px;border:none;border-radius:50px;background:var(--blue);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;transition:background var(--t),transform var(--t)}
+.btn:hover{background:var(--blue-dark);transform:scale(1.05)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,16,60,.56);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.overlay.on{display:flex;animation:oFade .2s ease}
+@keyframes oFade{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:20px;width:100%;max-width:660px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(20,40,160,.28);animation:mPop .3s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes mPop{from{opacity:0;transform:scale(.86) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.m-head{background:linear-gradient(135deg,#1428A0,#2a45d4);color:#fff;padding:24px 28px 18px;border-radius:20px 20px 0 0;position:relative}
+.m-head h2{font-size:clamp(16px,4vw,21px);font-weight:700;margin-bottom:3px}
+.m-head p{font-size:12px;opacity:.8}
+.m-close{position:absolute;top:13px;right:17px;background:rgba(255,255,255,.18);border:none;color:#fff;width:33px;height:33px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background var(--t)}
+.m-close:hover{background:rgba(255,255,255,.35)}
+.m-body{padding:24px 28px 28px}
+.m-top{display:flex;gap:22px;align-items:flex-start;margin-bottom:22px}
+.m-img{width:105px;min-width:105px;height:160px;object-fit:contain;background:linear-gradient(160deg,#e8eeff,#f5f8ff);border-radius:12px;padding:8px;filter:drop-shadow(0 3px 10px rgba(0,0,0,.1))}
+.m-meta .m-price{font-size:20px;font-weight:700;color:var(--blue);margin-bottom:7px}
+.m-meta .m-tl{font-size:13px;color:#555;line-height:1.6}
+.m-meta .m-badge{display:inline-block;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 12px;border-radius:50px;text-transform:uppercase;margin-bottom:8px}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.spec{background:#f6f8ff;border-radius:10px;padding:11px 13px;border-left:3px solid var(--blue)}
+.spec .sl{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.spec .sv{font-size:12.5px;color:#222;font-weight:500;line-height:1.4}
+
+/* FOOTER */
+footer{margin-top:60px;background:linear-gradient(135deg,#1428A0,#2a45d4);color:#fff;text-align:center;padding:34px 20px}
+footer h3{font-size:17px;margin-bottom:8px}
+footer p{font-size:13px;opacity:.8;margin-top:3px;line-height:1.7}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  header,nav{position:relative;top:auto}
+  .hero{padding:44px 16px 34px}
+  .phones{padding:32px 12px 48px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  .m-body{padding:18px 18px 24px}
+  .m-top{flex-direction:column;align-items:center;gap:14px}
+  .spec-grid{grid-template-columns:1fr}
+  .m-head{padding:20px 20px 15px}
+}
+@media(max-width:460px){
+  .grid{grid-template-columns:1fr 1fr}
+  .card-img{min-height:155px;padding:16px 10px 10px}
+  .card-img img{width:75px;height:115px}
+  .card-foot{flex-direction:column;align-items:stretch}
+  .btn{text-align:center}
+}
+@media(max-width:320px){
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Samsung Mobile Hub</h1>
+  <p>India Focus Project</p>
+</header>
+
+<nav>
+  <a href="#">Home</a>
+  <a href="#phones">Mobiles</a>
+  <a href="#about">About</a>
+</nav>
+
+<section class="hero">
+  <h1>Explore Samsung Mobiles</h1>
+  <p>Browse every Samsung Galaxy smartphone available in India — S, Z, A, M and F Series.</p>
+  <div class="search-wrap">
+    <svg width="18" height="18" fill="none" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="search" id="search" placeholder="Search e.g. S25 Ultra, A56, Z Fold 7, M55, F55…" aria-label="Search Samsung phones">
+  </div>
+</section>
+
+<section class="phones" id="phones">
+  <h2>Samsung Galaxy Smartphones in India</h2>
+  <p class="sub">Tap "View Details" on any card to see full specifications.</p>
+
+  <!-- Series filter tabs -->
+  <div class="tabs" role="group" aria-label="Filter by series">
+    <button class="tab active" data-f="all">All</button>
+    <button class="tab" data-f="s">S Series</button>
+    <button class="tab" data-f="z">Z Series</button>
+    <button class="tab" data-f="a">A Series</button>
+    <button class="tab" data-f="m">M Series</button>
+    <button class="tab" data-f="f">F Series</button>
+  </div>
+
+  <p id="no-results">No phones found. Try a different search.</p>
+  <p id="count-badge">Loading…</p>
+
+  <div class="grid" id="grid">
+
+<!-- ════════════════════════════════════════════
+     S  SERIES
+════════════════════════════════════════════ -->
+
+<!-- S26 Ultra -->
+<article class="card" data-s="s" data-n="samsung galaxy s26 ultra s series"
+  data-display="6.9-inch QHD+ Dynamic AMOLED 2X, 120Hz, 2600 nits"
+  data-cpu="Snapdragon 8 Elite Gen 2 for Galaxy" data-cam="200MP OIS + 50MP Periscope + 10MP + 12MP UW"
+  data-bat="5500 mAh, 65W Wired / 25W Wireless" data-store="256GB / 512GB / 1TB" data-ram="12GB / 16GB"
+  data-price="₹1,49,999" data-tl="Pinnacle flagship with 200MP quad camera and titanium frame."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Samsung_Galaxy_S25_Ultra_%28front%29.jpg/220px-Samsung_Galaxy_S25_Ultra_%28front%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Samsung_Galaxy_S25_Ultra_%28front%29.jpg/220px-Samsung_Galaxy_S25_Ultra_%28front%29.jpg" alt="Galaxy S26 Ultra" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S26+Ultra'">
+  </div>
+  <div class="card-body"><h3>Galaxy S26 Ultra</h3><p class="tl">200MP quad camera, titanium frame, built-in S Pen.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.9" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite Gen 2</li><li><span class="ql">Camera</span>200MP Main</li><li><span class="ql">Battery</span>5500 mAh 65W</li></ul>
+    <div class="card-foot"><span class="price">₹1,49,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S26+ -->
+<article class="card" data-s="s" data-n="samsung galaxy s26 plus s series"
+  data-display="6.7-inch QHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Elite Gen 2 for Galaxy" data-cam="50MP OIS + 10MP Periscope + 12MP UW"
+  data-bat="4900 mAh, 45W Wired / 15W Wireless" data-store="256GB / 512GB" data-ram="12GB"
+  data-price="₹1,09,999" data-tl="Large-screen Galaxy AI flagship with all-day battery."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Samsung_Galaxy_S25%2B_%28front%29.jpg/220px-Samsung_Galaxy_S25%2B_%28front%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Samsung_Galaxy_S25%2B_%28front%29.jpg/220px-Samsung_Galaxy_S25%2B_%28front%29.jpg" alt="Galaxy S26+" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S26%2B'">
+  </div>
+  <div class="card-body"><h3>Galaxy S26+</h3><p class="tl">Large-screen Galaxy AI flagship with all-day battery.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite Gen 2</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4900 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹1,09,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S26 -->
+<article class="card" data-s="s" data-n="samsung galaxy s26 s series"
+  data-display="6.2-inch FHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Elite Gen 2 for Galaxy" data-cam="50MP OIS + 10MP Telephoto + 12MP UW"
+  data-bat="4000 mAh, 25W Wired / 15W Wireless" data-store="128GB / 256GB" data-ram="8GB / 12GB"
+  data-price="₹84,999" data-tl="Compact Galaxy AI flagship for everyday brilliance."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy S26" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S26'">
+  </div>
+  <div class="card-body"><h3>Galaxy S26</h3><p class="tl">Compact Galaxy AI flagship for everyday brilliance.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.2" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite Gen 2</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹84,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S25 Ultra -->
+<article class="card" data-s="s" data-n="samsung galaxy s25 ultra s series"
+  data-display="6.9-inch QHD+ Dynamic AMOLED 2X, 120Hz, 2600 nits"
+  data-cpu="Snapdragon 8 Elite for Galaxy" data-cam="200MP OIS + 50MP Periscope + 10MP + 12MP UW"
+  data-bat="5000 mAh, 45W Wired / 15W Wireless" data-store="256GB / 512GB / 1TB" data-ram="12GB"
+  data-price="₹1,29,999" data-tl="Galaxy AI powerhouse with S Pen and titanium design."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Samsung_Galaxy_S25_Ultra_%28front%29.jpg/220px-Samsung_Galaxy_S25_Ultra_%28front%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Samsung_Galaxy_S25_Ultra_%28front%29.jpg/220px-Samsung_Galaxy_S25_Ultra_%28front%29.jpg" alt="Galaxy S25 Ultra" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S25+Ultra'">
+  </div>
+  <div class="card-body"><h3>Galaxy S25 Ultra</h3><p class="tl">Galaxy AI powerhouse with S Pen and titanium design.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.9" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite</li><li><span class="ql">Camera</span>200MP Main</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹1,29,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S25+ -->
+<article class="card" data-s="s" data-n="samsung galaxy s25 plus s series"
+  data-display="6.7-inch QHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Elite for Galaxy" data-cam="50MP OIS + 10MP Periscope + 12MP UW"
+  data-bat="4900 mAh, 45W Wired / 15W Wireless" data-store="256GB / 512GB" data-ram="12GB"
+  data-price="₹99,999" data-tl="Slim, powerful flagship with long-lasting battery."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Samsung_Galaxy_S25%2B_%28front%29.jpg/220px-Samsung_Galaxy_S25%2B_%28front%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Samsung_Galaxy_S25%2B_%28front%29.jpg/220px-Samsung_Galaxy_S25%2B_%28front%29.jpg" alt="Galaxy S25+" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S25%2B'">
+  </div>
+  <div class="card-body"><h3>Galaxy S25+</h3><p class="tl">Slim, powerful flagship with long-lasting battery.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4900 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹99,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S25 -->
+<article class="card" data-s="s" data-n="samsung galaxy s25 s series"
+  data-display="6.2-inch FHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Elite for Galaxy" data-cam="50MP OIS + 10MP Telephoto + 12MP UW"
+  data-bat="4000 mAh, 25W Wired / 15W Wireless" data-store="128GB / 256GB" data-ram="12GB"
+  data-price="₹79,999" data-tl="Sleek and smart — a compact Galaxy AI powerhouse."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy S25" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S25'">
+  </div>
+  <div class="card-body"><h3>Galaxy S25</h3><p class="tl">Sleek and smart — a compact Galaxy AI powerhouse.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.2" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹79,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S25 Edge -->
+<article class="card" data-s="s" data-n="samsung galaxy s25 edge s series"
+  data-display="6.7-inch FHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Elite for Galaxy" data-cam="200MP OIS + 12MP UW"
+  data-bat="3900 mAh, 25W Wired / 15W Wireless" data-store="256GB / 512GB" data-ram="12GB"
+  data-price="₹1,09,999" data-tl="Ultra-thin titanium build at just 5.8mm — the slimmest Galaxy ever."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy S25 Edge" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S25+Edge'">
+  </div>
+  <div class="card-body"><h3>Galaxy S25 Edge</h3><p class="tl">Ultra-thin at 5.8mm — the slimmest Galaxy ever made.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite</li><li><span class="ql">Camera</span>200MP Main</li><li><span class="ql">Battery</span>3900 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹1,09,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S24 Ultra -->
+<article class="card" data-s="s" data-n="samsung galaxy s24 ultra s series"
+  data-display="6.8-inch QHD+ Dynamic AMOLED 2X, 120Hz, 2600 nits"
+  data-cpu="Snapdragon 8 Gen 3 for Galaxy" data-cam="200MP OIS + 50MP Periscope + 10MP + 12MP UW"
+  data-bat="5000 mAh, 45W Wired / 15W Wireless" data-store="256GB / 512GB / 1TB" data-ram="12GB"
+  data-price="₹1,29,999" data-tl="Titanium flagship with S Pen and 200MP camera system."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg" alt="Galaxy S24 Ultra" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S24+Ultra'">
+  </div>
+  <div class="card-body"><h3>Galaxy S24 Ultra</h3><p class="tl">Titanium flagship with S Pen and 200MP camera system.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.8" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 3</li><li><span class="ql">Camera</span>200MP Main</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹1,29,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S24+ -->
+<article class="card" data-s="s" data-n="samsung galaxy s24 plus s series"
+  data-display="6.7-inch QHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Gen 3 for Galaxy" data-cam="50MP OIS + 10MP Periscope + 12MP UW"
+  data-bat="4900 mAh, 45W Wired / 15W Wireless" data-store="256GB / 512GB" data-ram="12GB"
+  data-price="₹94,999" data-tl="Premium Galaxy AI experience on a large bright display."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg" alt="Galaxy S24+" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S24%2B'">
+  </div>
+  <div class="card-body"><h3>Galaxy S24+</h3><p class="tl">Premium Galaxy AI on a large, bright display.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 3</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4900 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹94,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S24 -->
+<article class="card" data-s="s" data-n="samsung galaxy s24 s series"
+  data-display="6.2-inch FHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Gen 3 for Galaxy" data-cam="50MP OIS + 10MP Telephoto + 12MP UW"
+  data-bat="4000 mAh, 25W Wired / 15W Wireless" data-store="128GB / 256GB" data-ram="8GB"
+  data-price="₹74,999" data-tl="Compact Galaxy AI flagship for everyday excellence."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg" alt="Galaxy S24" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S24'">
+  </div>
+  <div class="card-body"><h3>Galaxy S24</h3><p class="tl">Compact Galaxy AI flagship for everyday excellence.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.2" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 3</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹74,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- S23 FE -->
+<article class="card" data-s="s" data-n="samsung galaxy s23 fe fan edition s series"
+  data-display="6.4-inch FHD+ Dynamic AMOLED 2X, 120Hz"
+  data-cpu="Snapdragon 8 Gen 1" data-cam="50MP OIS + 8MP UW + 10MP Telephoto"
+  data-bat="4500 mAh, 25W Wired / 15W Wireless" data-store="128GB / 256GB" data-ram="8GB"
+  data-price="₹44,999" data-tl="Fan Edition — flagship performance at a smarter price."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg">
+  <div class="card-img"><span class="badge bs">S Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Galaxy_S24_Ultra_%281%29.jpg/220px-Samsung_Galaxy_S24_Ultra_%281%29.jpg" alt="Galaxy S23 FE" loading="lazy" onerror="this.src='https://placehold.co/95x145/1428A0/ffffff?text=S23+FE'">
+  </div>
+  <div class="card-body"><h3>Galaxy S23 FE</h3><p class="tl">Flagship performance at a smarter price point.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.4" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 1</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4500 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹44,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- ════════════════════════════════════════════
+     Z  SERIES
+════════════════════════════════════════════ -->
+
+<!-- Z Fold 7 -->
+<article class="card" data-s="z" data-n="samsung galaxy z fold 7 z series"
+  data-display="8.0-inch QHD+ Dynamic AMOLED 2X, 120Hz (inner) + 6.3-inch Cover"
+  data-cpu="Snapdragon 8 Elite Gen 2 for Galaxy" data-cam="200MP OIS + 10MP Periscope + 12MP UW"
+  data-bat="4600 mAh, 65W Wired / 25W Wireless" data-store="256GB / 512GB / 1TB" data-ram="12GB / 16GB"
+  data-price="₹1,79,999" data-tl="Next-gen book-fold with 200MP camera and ultra-thin hinge."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg/220px-Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg">
+  <div class="card-img"><span class="badge bz">Z Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg/220px-Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg" alt="Galaxy Z Fold 7" loading="lazy" onerror="this.src='https://placehold.co/95x145/7b2ff7/ffffff?text=Z+Fold+7'">
+  </div>
+  <div class="card-body"><h3>Galaxy Z Fold 7</h3><p class="tl">Next-gen book-fold with 200MP camera &amp; thin hinge.</p>
+    <ul class="qs"><li><span class="ql">Display</span>8.0" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite Gen 2</li><li><span class="ql">Camera</span>200MP Main</li><li><span class="ql">Battery</span>4600 mAh 65W</li></ul>
+    <div class="card-foot"><span class="price">₹1,79,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- Z Flip 7 -->
+<article class="card" data-s="z" data-n="samsung galaxy z flip 7 z series"
+  data-display="6.9-inch FHD+ Dynamic AMOLED 2X, 120Hz + 4.0-inch Cover"
+  data-cpu="Snapdragon 8 Elite Gen 2 for Galaxy" data-cam="50MP OIS + 12MP UW"
+  data-bat="4000 mAh, 45W Wired / 25W Wireless" data-store="256GB / 512GB" data-ram="12GB"
+  data-price="₹1,09,999" data-tl="Stylish flip foldable with larger cover screen and 50MP OIS."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Samsung_Galaxy_Z_Flip6_%28front%29.jpg/220px-Samsung_Galaxy_Z_Flip6_%28front%29.jpg">
+  <div class="card-img"><span class="badge bz">Z Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Samsung_Galaxy_Z_Flip6_%28front%29.jpg/220px-Samsung_Galaxy_Z_Flip6_%28front%29.jpg" alt="Galaxy Z Flip 7" loading="lazy" onerror="this.src='https://placehold.co/95x145/7b2ff7/ffffff?text=Z+Flip+7'">
+  </div>
+  <div class="card-body"><h3>Galaxy Z Flip 7</h3><p class="tl">Stylish flip foldable with large cover screen &amp; 50MP OIS.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.9" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Elite Gen 2</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹1,09,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- Z Fold 6 -->
+<article class="card" data-s="z" data-n="samsung galaxy z fold 6 z series"
+  data-display="7.6-inch QHD+ Dynamic AMOLED 2X, 120Hz (inner) + 6.3-inch Cover"
+  data-cpu="Snapdragon 8 Gen 3 for Galaxy" data-cam="50MP OIS + 10MP Periscope + 12MP UW"
+  data-bat="4400 mAh, 25W Wired / 15W Wireless" data-store="256GB / 512GB / 1TB" data-ram="12GB"
+  data-price="₹1,64,999" data-tl="Thinner, lighter Fold with Galaxy AI and refined hinge."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg/220px-Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg">
+  <div class="card-img"><span class="badge bz">Z Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg/220px-Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg" alt="Galaxy Z Fold 6" loading="lazy" onerror="this.src='https://placehold.co/95x145/7b2ff7/ffffff?text=Z+Fold+6'">
+  </div>
+  <div class="card-body"><h3>Galaxy Z Fold 6</h3><p class="tl">Thinner, lighter Fold with Galaxy AI &amp; refined hinge.</p>
+    <ul class="qs"><li><span class="ql">Display</span>7.6" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 3</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4400 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹1,64,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- Z Flip 6 -->
+<article class="card" data-s="z" data-n="samsung galaxy z flip 6 z series"
+  data-display="6.7-inch FHD+ Dynamic AMOLED 2X, 120Hz + 3.4-inch Cover"
+  data-cpu="Snapdragon 8 Gen 3 for Galaxy" data-cam="50MP OIS + 12MP UW"
+  data-bat="4000 mAh, 25W Wired / 15W Wireless" data-store="256GB / 512GB" data-ram="12GB"
+  data-price="₹1,09,999" data-tl="Galaxy AI flip phone with enhanced 50MP OIS camera."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Samsung_Galaxy_Z_Flip6_%28front%29.jpg/220px-Samsung_Galaxy_Z_Flip6_%28front%29.jpg">
+  <div class="card-img"><span class="badge bz">Z Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Samsung_Galaxy_Z_Flip6_%28front%29.jpg/220px-Samsung_Galaxy_Z_Flip6_%28front%29.jpg" alt="Galaxy Z Flip 6" loading="lazy" onerror="this.src='https://placehold.co/95x145/7b2ff7/ffffff?text=Z+Flip+6'">
+  </div>
+  <div class="card-body"><h3>Galaxy Z Flip 6</h3><p class="tl">Galaxy AI flip phone with enhanced 50MP OIS camera.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 3</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹1,09,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- Z Fold 5 -->
+<article class="card" data-s="z" data-n="samsung galaxy z fold 5 z series"
+  data-display="7.6-inch QHD+ Dynamic AMOLED 2X, 120Hz (inner) + 6.2-inch Cover"
+  data-cpu="Snapdragon 8 Gen 2 for Galaxy" data-cam="50MP OIS + 10MP Periscope + 12MP UW"
+  data-bat="4400 mAh, 25W Wired / 15W Wireless" data-store="256GB / 512GB / 1TB" data-ram="12GB"
+  data-price="₹1,54,999" data-tl="Flex Hinge flagship foldable with S Pen support."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg/220px-Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg">
+  <div class="card-img"><span class="badge bz">Z Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg/220px-Samsung_Galaxy_Z_Fold6_%28front_unfolded%29.jpg" alt="Galaxy Z Fold 5" loading="lazy" onerror="this.src='https://placehold.co/95x145/7b2ff7/ffffff?text=Z+Fold+5'">
+  </div>
+  <div class="card-body"><h3>Galaxy Z Fold 5</h3><p class="tl">Flex Hinge flagship foldable with S Pen support.</p>
+    <ul class="qs"><li><span class="ql">Display</span>7.6" QHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 2</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>4400 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹1,54,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- Z Flip 5 -->
+<article class="card" data-s="z" data-n="samsung galaxy z flip 5 z series"
+  data-display="6.7-inch FHD+ Dynamic AMOLED 2X, 120Hz + 3.4-inch Cover"
+  data-cpu="Snapdragon 8 Gen 2 for Galaxy" data-cam="12MP OIS + 12MP UW"
+  data-bat="3700 mAh, 25W Wired / 15W Wireless" data-store="256GB / 512GB" data-ram="8GB"
+  data-price="₹99,999" data-tl="Pocket-friendly foldable with large Flex Window."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Samsung_Galaxy_Z_Flip6_%28front%29.jpg/220px-Samsung_Galaxy_Z_Flip6_%28front%29.jpg">
+  <div class="card-img"><span class="badge bz">Z Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Samsung_Galaxy_Z_Flip6_%28front%29.jpg/220px-Samsung_Galaxy_Z_Flip6_%28front%29.jpg" alt="Galaxy Z Flip 5" loading="lazy" onerror="this.src='https://placehold.co/95x145/7b2ff7/ffffff?text=Z+Flip+5'">
+  </div>
+  <div class="card-body"><h3>Galaxy Z Flip 5</h3><p class="tl">Pocket-friendly foldable with large Flex Window.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 8 Gen 2</li><li><span class="ql">Camera</span>12MP OIS</li><li><span class="ql">Battery</span>3700 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹99,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- ════════════════════════════════════════════
+     A  SERIES
+════════════════════════════════════════════ -->
+
+<!-- A56 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a56 5g a series"
+  data-display="6.7-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1580" data-cam="50MP OIS + 12MP UW + 5MP Macro"
+  data-bat="5000 mAh, 45W Wired" data-store="128GB / 256GB" data-ram="8GB / 12GB"
+  data-price="₹39,999" data-tl="Top A-series 2025 model with Exynos 1580 and 45W charging."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A56 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A56+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A56 5G</h3><p class="tl">Top A-series 2025 with Exynos 1580 &amp; 45W charging.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1580</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹39,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A55 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a55 5g a series"
+  data-display="6.6-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1480" data-cam="50MP OIS + 12MP UW + 5MP Macro"
+  data-bat="5000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="8GB / 12GB"
+  data-price="₹35,999" data-tl="Premium mid-ranger with OIS camera and IP67 rating."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A55 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A55+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A55 5G</h3><p class="tl">Premium mid-ranger with OIS camera &amp; IP67 rating.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.6" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1480</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹35,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A36 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a36 5g a series"
+  data-display="6.7-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Snapdragon 6 Gen 3" data-cam="50MP OIS + 8MP UW + 5MP Macro"
+  data-bat="5000 mAh, 45W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹29,999" data-tl="Upgraded mid-range with Snapdragon power and 45W charging."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A36 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A36+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A36 5G</h3><p class="tl">Mid-range with Snapdragon 6 Gen 3 &amp; 45W charging.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 6 Gen 3</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹29,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A35 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a35 5g a series"
+  data-display="6.6-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1380" data-cam="50MP OIS + 8MP UW + 5MP Macro"
+  data-bat="5000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹26,999" data-tl="Balanced mid-ranger with vibrant AMOLED and 5G."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A35 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A35+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A35 5G</h3><p class="tl">Balanced mid-ranger with vibrant AMOLED &amp; 5G.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.6" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1380</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹26,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A26 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a26 5g a series"
+  data-display="6.6-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1380" data-cam="50MP + 8MP UW + 2MP"
+  data-bat="5000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹22,999" data-tl="Feature-rich budget A-series with AMOLED display."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A26 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A26+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A26 5G</h3><p class="tl">Feature-rich budget A-series with AMOLED &amp; 5G.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.6" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1380</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>5000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹22,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A25 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a25 5g a series"
+  data-display="6.5-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1280" data-cam="50MP OIS + 8MP UW + 2MP Macro"
+  data-bat="5000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹19,999" data-tl="Vibrant AMOLED mid-ranger with reliable 5G connectivity."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A25 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A25+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A25 5G</h3><p class="tl">Vibrant AMOLED mid-ranger with reliable 5G.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.5" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1280</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹19,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A16 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a16 5g a series"
+  data-display="6.7-inch FHD+ Super AMOLED, 90Hz"
+  data-cpu="MediaTek Dimensity 6300" data-cam="50MP + 5MP UW + 2MP"
+  data-bat="5000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="4GB / 6GB / 8GB"
+  data-price="₹17,999" data-tl="Affordable 5G AMOLED with Samsung's 6-year update promise."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A16 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A16+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A16 5G</h3><p class="tl">Affordable 5G AMOLED with 6-year update promise.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 90Hz</li><li><span class="ql">Chip</span>Dimensity 6300</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>5000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹17,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A15 5G -->
+<article class="card" data-s="a" data-n="samsung galaxy a15 5g a series"
+  data-display="6.5-inch FHD+ Super AMOLED, 90Hz"
+  data-cpu="MediaTek Dimensity 6100+" data-cam="50MP + 5MP UW + 2MP Macro"
+  data-bat="5000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="4GB / 6GB / 8GB"
+  data-price="₹14,999" data-tl="Affordable 5G with AMOLED display and generous storage."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A15 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A15+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy A15 5G</h3><p class="tl">Affordable 5G with AMOLED display &amp; generous storage.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.5" FHD+ 90Hz</li><li><span class="ql">Chip</span>Dimensity 6100+</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>5000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹14,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- A06 -->
+<article class="card" data-s="a" data-n="samsung galaxy a06 a series"
+  data-display="6.7-inch HD+ PLS LCD, 60Hz"
+  data-cpu="MediaTek Helio G85" data-cam="50MP + 2MP Depth"
+  data-bat="5000 mAh, 25W Wired" data-store="64GB / 128GB" data-ram="4GB / 6GB"
+  data-price="₹10,999" data-tl="Entry-level Galaxy with large display and solid battery life."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge ba">A Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy A06" loading="lazy" onerror="this.src='https://placehold.co/95x145/0e7c5e/ffffff?text=A06'">
+  </div>
+  <div class="card-body"><h3>Galaxy A06</h3><p class="tl">Entry-level Galaxy with large display &amp; solid battery.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" HD+ 60Hz</li><li><span class="ql">Chip</span>Helio G85</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>5000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹10,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- ════════════════════════════════════════════
+     M  SERIES
+════════════════════════════════════════════ -->
+
+<!-- M56 5G -->
+<article class="card" data-s="m" data-n="samsung galaxy m56 5g m series"
+  data-display="6.7-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Snapdragon 7s Gen 3" data-cam="50MP OIS + 8MP UW + 2MP Macro"
+  data-bat="6000 mAh, 45W Wired" data-store="128GB / 256GB" data-ram="8GB / 12GB"
+  data-price="₹32,999" data-tl="M-series flagship with 6000mAh and 45W fast charging."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bm">M Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy M56 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/c45000/ffffff?text=M56+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy M56 5G</h3><p class="tl">M-series flagship with 6000mAh &amp; 45W fast charging.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 7s Gen 3</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>6000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹32,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- M55 5G -->
+<article class="card" data-s="m" data-n="samsung galaxy m55 5g m series"
+  data-display="6.7-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Snapdragon 7 Gen 1" data-cam="50MP OIS + 8MP UW + 2MP Macro"
+  data-bat="5000 mAh, 45W Wired" data-store="128GB / 256GB" data-ram="8GB / 12GB"
+  data-price="₹29,999" data-tl="Performance-focused M Series with 45W fast charging."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bm">M Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy M55 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/c45000/ffffff?text=M55+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy M55 5G</h3><p class="tl">Performance-focused M Series with 45W fast charging.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 7 Gen 1</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹29,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- M36 5G -->
+<article class="card" data-s="m" data-n="samsung galaxy m36 5g m series"
+  data-display="6.7-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1380" data-cam="50MP OIS + 8MP UW + 2MP Macro"
+  data-bat="6000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹21,999" data-tl="Reliable mid-range with massive 6000mAh battery."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bm">M Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy M36 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/c45000/ffffff?text=M36+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy M36 5G</h3><p class="tl">Reliable mid-range with massive 6000mAh battery.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1380</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>6000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹21,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- M35 5G -->
+<article class="card" data-s="m" data-n="samsung galaxy m35 5g m series"
+  data-display="6.6-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1380" data-cam="50MP OIS + 8MP UW + 2MP Macro"
+  data-bat="6000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹19,999" data-tl="Massive 6000mAh battery with smooth AMOLED and 5G."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bm">M Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy M35 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/c45000/ffffff?text=M35+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy M35 5G</h3><p class="tl">Massive 6000mAh battery with AMOLED &amp; 5G.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.6" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1380</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>6000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹19,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- M16 5G -->
+<article class="card" data-s="m" data-n="samsung galaxy m16 5g m series"
+  data-display="6.7-inch FHD+ Super AMOLED, 90Hz"
+  data-cpu="MediaTek Dimensity 6300" data-cam="50MP + 5MP UW + 2MP"
+  data-bat="6000 mAh, 25W Wired" data-store="128GB" data-ram="4GB / 6GB"
+  data-price="₹14,999" data-tl="Budget 5G with 6000mAh and AMOLED — great value."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bm">M Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy M16 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/c45000/ffffff?text=M16+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy M16 5G</h3><p class="tl">Budget 5G with 6000mAh &amp; AMOLED — great value.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 90Hz</li><li><span class="ql">Chip</span>Dimensity 6300</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>6000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹14,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- M15 5G -->
+<article class="card" data-s="m" data-n="samsung galaxy m15 5g m series"
+  data-display="6.5-inch FHD+ Super AMOLED, 90Hz"
+  data-cpu="MediaTek Dimensity 6100+" data-cam="50MP + 5MP UW + 2MP Macro"
+  data-bat="6000 mAh, 25W Wired" data-store="128GB" data-ram="4GB / 6GB"
+  data-price="₹13,999" data-tl="Incredible battery life with AMOLED at a budget price."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg">
+  <div class="card-img"><span class="badge bm">M Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samsung_Galaxy_S25_%28front%29.jpg/220px-Samsung_Galaxy_S25_%28front%29.jpg" alt="Galaxy M15 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/c45000/ffffff?text=M15+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy M15 5G</h3><p class="tl">Incredible battery life with AMOLED at budget price.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.5" FHD+ 90Hz</li><li><span class="ql">Chip</span>Dimensity 6100+</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>6000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹13,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- ════════════════════════════════════════════
+     F  SERIES  (Flipkart-exclusive)
+════════════════════════════════════════════ -->
+
+<!-- F56 5G -->
+<article class="card" data-s="f" data-n="samsung galaxy f56 5g f series"
+  data-display="6.7-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1580" data-cam="50MP OIS + 12MP UW + 5MP Macro"
+  data-bat="5000 mAh, 45W Wired" data-store="128GB / 256GB" data-ram="8GB / 12GB"
+  data-price="₹34,999" data-tl="Flipkart-exclusive F-series flagship with OIS and 45W charging."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge bf">F Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy F56 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/b8000e/ffffff?text=F56+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy F56 5G</h3><p class="tl">F-series flagship with OIS camera &amp; 45W charging.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1580</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹34,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- F55 5G -->
+<article class="card" data-s="f" data-n="samsung galaxy f55 5g f series"
+  data-display="6.7-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Snapdragon 7 Gen 1" data-cam="50MP OIS + 8MP UW + 2MP Macro"
+  data-bat="5000 mAh, 45W Wired" data-store="128GB / 256GB" data-ram="8GB / 12GB"
+  data-price="₹29,999" data-tl="Flipkart exclusive with Snapdragon 7 Gen 1 and stylish design."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge bf">F Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy F55 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/b8000e/ffffff?text=F55+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy F55 5G</h3><p class="tl">Flipkart exclusive with SD 7 Gen 1 &amp; stylish design.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 7 Gen 1</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹29,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- F36 5G -->
+<article class="card" data-s="f" data-n="samsung galaxy f36 5g f series"
+  data-display="6.6-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Snapdragon 6 Gen 3" data-cam="50MP OIS + 8MP UW + 5MP Macro"
+  data-bat="5000 mAh, 45W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹26,999" data-tl="F-series mid-ranger with 45W charging and OIS camera."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge bf">F Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy F36 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/b8000e/ffffff?text=F36+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy F36 5G</h3><p class="tl">F-series mid-ranger with 45W charging &amp; OIS camera.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.6" FHD+ 120Hz</li><li><span class="ql">Chip</span>SD 6 Gen 3</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>5000 mAh 45W</li></ul>
+    <div class="card-foot"><span class="price">₹26,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- F35 5G -->
+<article class="card" data-s="f" data-n="samsung galaxy f35 5g f series"
+  data-display="6.6-inch FHD+ Super AMOLED, 120Hz"
+  data-cpu="Exynos 1380" data-cam="50MP OIS + 8MP UW + 2MP"
+  data-bat="6000 mAh, 25W Wired" data-store="128GB / 256GB" data-ram="6GB / 8GB"
+  data-price="₹22,999" data-tl="Huge 6000mAh battery with vibrant AMOLED display."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge bf">F Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy F35 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/b8000e/ffffff?text=F35+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy F35 5G</h3><p class="tl">Huge 6000mAh battery with vibrant AMOLED display.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.6" FHD+ 120Hz</li><li><span class="ql">Chip</span>Exynos 1380</li><li><span class="ql">Camera</span>50MP OIS</li><li><span class="ql">Battery</span>6000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹22,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- F16 5G -->
+<article class="card" data-s="f" data-n="samsung galaxy f16 5g f series"
+  data-display="6.7-inch FHD+ Super AMOLED, 90Hz"
+  data-cpu="MediaTek Dimensity 6300" data-cam="50MP + 5MP UW + 2MP"
+  data-bat="6000 mAh, 25W Wired" data-store="128GB" data-ram="4GB / 6GB"
+  data-price="₹16,999" data-tl="Budget 5G with massive battery and AMOLED panel."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge bf">F Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy F16 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/b8000e/ffffff?text=F16+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy F16 5G</h3><p class="tl">Budget 5G with massive battery &amp; AMOLED panel.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.7" FHD+ 90Hz</li><li><span class="ql">Chip</span>Dimensity 6300</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>6000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹16,999</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+<!-- F15 5G -->
+<article class="card" data-s="f" data-n="samsung galaxy f15 5g f series"
+  data-display="6.5-inch FHD+ Super AMOLED, 90Hz"
+  data-cpu="MediaTek Dimensity 6100+" data-cam="50MP + 5MP UW + 2MP Macro"
+  data-bat="6000 mAh, 25W Wired" data-store="128GB" data-ram="4GB / 6GB"
+  data-price="₹13,499" data-tl="Flipkart exclusive with 6000mAh battery and vivid AMOLED."
+  data-img="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg">
+  <div class="card-img"><span class="badge bf">F Series</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Samsung_Galaxy_A55_5G.jpg/220px-Samsung_Galaxy_A55_5G.jpg" alt="Galaxy F15 5G" loading="lazy" onerror="this.src='https://placehold.co/95x145/b8000e/ffffff?text=F15+5G'">
+  </div>
+  <div class="card-body"><h3>Galaxy F15 5G</h3><p class="tl">Flipkart exclusive with 6000mAh &amp; vivid AMOLED.</p>
+    <ul class="qs"><li><span class="ql">Display</span>6.5" FHD+ 90Hz</li><li><span class="ql">Chip</span>Dimensity 6100+</li><li><span class="ql">Camera</span>50MP Main</li><li><span class="ql">Battery</span>6000 mAh 25W</li></ul>
+    <div class="card-foot"><span class="price">₹13,499</span><button class="btn">View Details</button></div>
+  </div>
+</article>
+
+  </div><!-- /grid -->
+</section>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="modal">
+    <div class="m-head">
+      <h2 id="m-title"></h2>
+      <p id="m-series"></p>
+      <button class="m-close" id="m-close" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="m-body">
+      <div class="m-top">
+        <img class="m-img" id="m-img" src="" alt="">
+        <div class="m-meta">
+          <span class="m-badge" id="m-badge"></span>
+          <div class="m-price" id="m-price"></div>
+          <p class="m-tl" id="m-tl"></p>
+        </div>
+      </div>
+      <div class="spec-grid" id="spec-grid"></div>
+    </div>
+  </div>
+</div>
+
+<footer id="about">
+  <h3>Samsung Mobile Hub</h3>
+  <p>India Focus Project &copy; 2026</p>
+  <p>This is an independent project website. Not affiliated with Samsung Electronics Co., Ltd.</p>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var cards   = Array.from(document.querySelectorAll('.card'));
+  var grid    = document.getElementById('grid');
+  var noRes   = document.getElementById('no-results');
+  var overlay = document.getElementById('overlay');
+  var countBadge = document.getElementById('count-badge');
+  var activeF = 'all';
+
+  var seriesLabel = {s:'S Series',z:'Z Series',a:'A Series',m:'M Series',f:'F Series'};
+  var badgeCls    = {s:'bs',z:'bz',a:'ba',m:'bm',f:'bf'};
+
+  /* Show total count on load */
+  countBadge.textContent = cards.length + ' phones listed';
+
+  /* Search */
+  document.getElementById('search').addEventListener('input', function(){
+    applyFilter(this.value.trim().toLowerCase());
+  });
+
+  /* Tabs */
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      activeF = tab.dataset.f;
+      applyFilter(document.getElementById('search').value.trim().toLowerCase());
+    });
+  });
+
+  function applyFilter(q){
+    var vis = 0;
+    cards.forEach(function(c){
+      var match = c.dataset.n.indexOf(q) !== -1 &&
+                  (activeF === 'all' || c.dataset.s === activeF);
+      if(match){
+        c.classList.remove('hidden');
+        c.style.animation = 'none';
+        void c.offsetWidth;
+        c.style.animation = '';
+        vis++;
+      } else {
+        c.classList.add('hidden');
+      }
+    });
+    noRes.style.display = vis === 0 ? 'block' : 'none';
+    countBadge.textContent = vis + ' phone' + (vis !== 1 ? 's' : '') + ' shown';
+  }
+
+  /* Modal open via event delegation */
+  grid.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn');
+    if(!btn) return;
+    var c = btn.closest('.card');
+    if(!c) return;
+    var d = c.dataset, s = d.s;
+    document.getElementById('m-title').textContent  = c.querySelector('h3').textContent;
+    document.getElementById('m-series').textContent = seriesLabel[s] || '';
+    document.getElementById('m-img').src  = d.img;
+    document.getElementById('m-img').alt  = c.querySelector('h3').textContent;
+    document.getElementById('m-price').textContent = d.price;
+    document.getElementById('m-tl').textContent    = d.tl;
+    var badge = document.getElementById('m-badge');
+    badge.textContent = seriesLabel[s] || '';
+    badge.className   = 'm-badge ' + (badgeCls[s] || '');
+    document.getElementById('spec-grid').innerHTML = [
+      {l:'Display',   v:d.display},
+      {l:'Processor', v:d.cpu},
+      {l:'Camera',    v:d.cam},
+      {l:'Battery',   v:d.bat},
+      {l:'Storage',   v:d.store},
+      {l:'RAM',       v:d.ram},
+      {l:'Price (IN)',v:d.price}
+    ].map(function(sp){
+      return '<div class="spec"><div class="sl">'+sp.l+'</div><div class="sv">'+sp.v+'</div></div>';
+    }).join('');
+    overlay.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ document.getElementById('m-close').focus(); }, 50);
+  });
+
+  /* Modal close */
+  function closeModal(){
+    overlay.classList.remove('on');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('m-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+})();
+</script>
+</body>
+</html>
